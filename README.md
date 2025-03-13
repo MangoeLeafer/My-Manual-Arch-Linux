@@ -397,3 +397,12 @@ Now you should be able to update all your packages just fine! Also, because earl
 
 ## Additional packages and drivers
 
+## Adding users
+
+## Setting up desktop environment
+
+## Setting up window manager
+
+## Login screen
+
+## Finishing touches
