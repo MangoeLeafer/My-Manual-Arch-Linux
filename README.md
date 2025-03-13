@@ -1,4 +1,6 @@
-# Setting console keyboard layout/font
+# Initial setup
+
+## Setting console keyboard layout/font
 
 Load the US keymap and set a font that’s commonly used in consoles.
 
@@ -7,7 +9,7 @@ Load the US keymap and set a font that’s commonly used in consoles.
 # setfont lat9w-16
 ```
 
-# Verify boot mode
+## Verify boot mode
 
 Running the command below should return 64.
 
@@ -16,7 +18,7 @@ Running the command below should return 64.
 ...
 ```
 
-# Connect to the internet
+## Connect to the internet
 
 Run the commands below to get the network devices currently available and to make sure that is not blocking the wireless network card. This part is going to strictly cover WiFi.
 
@@ -54,7 +56,7 @@ Then, with the command below, confirm that the connection is valid.
 ...
 ```
 
-# Updating system clock
+## Updating system clock
 
 Use the command below to make sure that the system clock is synced.
 
@@ -63,7 +65,9 @@ Use the command below to make sure that the system clock is synced.
 ...
 ```
 
-# Preparing and partitioning the disk
+# Disk preparation
+
+## Partitioning the disk
 
 First, check to see what disks and partitions are currently available with the command below.
 
@@ -149,7 +153,7 @@ Then, after confirming the correct partitions have been made, then we can write 
 w
 ```
 
-# Formatting the disk
+## Formatting the disk
 
 Now that we have the disk partitioned, each partition can be referred to as a device.
 
@@ -177,7 +181,7 @@ And then finally, the EFI system partition.
 # mkfs.fat -F 32 /dev/nvme0n1p1
 ```
 
-# Mounting the file systems
+## Mounting the file systems
 
 The next step is to mount the file systems. This is an important step because it makes the data within these file systems accessible so that we can make changes to it. It’ll also get our swap and EFI partitions prepared as you’ll see soon.
 
