@@ -1,4 +1,5 @@
 # Setting console keyboard layout/font
+
 Load the US keymap and set a font that’s commonly used in consoles.
 
 ```
@@ -7,6 +8,7 @@ Load the US keymap and set a font that’s commonly used in consoles.
 ```
 
 # Verify boot mode
+
 Running the command below should return 64.
 
 ```
@@ -15,6 +17,7 @@ Running the command below should return 64.
 ```
 
 # Connect to the internet
+
 Run the commands below to get the network devices currently available and to make sure that is not blocking the wireless network card. This part is going to strictly cover WiFi.
 
 ```
@@ -52,16 +55,23 @@ Then, with the command below, confirm that the connection is valid.
 ```
 
 # Updating system clock
+
 Use the command below to make sure that the system clock is synced.
 
 ```
 # timedatectl
 ...
-Preparing and partitioning the disk
+```
+
+# Preparing and partitioning the disk
+
 First, check to see what disks and partitions are currently available with the command below.
+
+```
 # lsblk
 ...
 ```
+
 You should find a list of devices that would be accessible as **‘/dev/sda’** or **‘/dev/nvme0n1’** or **‘/dev/mmcblk0’**. Because our setup most likely has an SSD ready for installing the OS on, we’re going to use **‘/dev/nvme0n1’** as the primary drive to partition. Other drives can be partitioned later after all installation is done.
 
 First, we’ll enter the **‘fdisk’** environment to create new partitions for our **‘/dev/nvme0n1’** with the command below.
@@ -70,11 +80,17 @@ First, we’ll enter the **‘fdisk’** environment to create new partitions fo
 # fdisk /dev/nvme0n1
 ```
 
-We will create 4 partitions: _**EFI system**_, Linux swap, Linux x86-64 root, and Linux home. The EFI system partition is going to be 1GB which is going to act as a storage for UEFI bootloaders, applications, and drivers to be launched by the UEFI firmware. The Linux swap partition will be [RAM size]GB so that in hibernation mode RAM can be stored in this partition. Next, the Linux x86-64 root is going to take up 100GB, and is going to be used to store the OS and be the root directory for our system. Then, the rest can be dedicated to the Linux home partition.
+We will create 4 partitions: _**EFI system**_, _**Linux swap**_, _**Linux x86-64 root**_, and _**Linux home**_. The EFI system partition is going to be 1GB which is going to act as a storage for UEFI bootloaders, applications, and drivers to be launched by the UEFI firmware. The Linux swap partition will be [RAM size]GB so that in hibernation mode RAM can be stored in this partition. Next, the Linux x86-64 root is going to take up 100GB, and is going to be used to store the OS and be the root directory for our system. Then, the rest can be dedicated to the Linux home partition.
 
-First, we’re going to type ‘g’ and press enter to set up a GUID Partition Table (GPT). This is so we actually have something to part with.
+First, we’re going to type **‘g’** and press enter to set up a GUID Partition Table (GPT). This is so we actually have something to part with.
+
+```
 # g
+```
+
 Next, we’re going to create our partitions with these commands. First is the EFI system.
+
+```
 n
 ... [press enter for default partition number]
 ... [press enter for default partition starting sector]
@@ -82,7 +98,11 @@ n
 t
 ... [press enter for default partition]
 1
+```
+
 Next is the Linux swap. Replace XX with your RAM space.
+
+```
 n
 ... [press enter for default partition number]
 ... [press enter for default partition starting sector]
@@ -90,7 +110,11 @@ n
 t
 ... [press enter for default partition]
 19
+```
+
 Then the Linux x86-64 root is next.
+
+```
 n
 ... [press enter for default partition number]
 ... [press enter for default partition starting sector]
@@ -98,7 +122,11 @@ n
 t
 ... [press enter for default partition]
 23
+```
+
 And finally, the Linux home partition is next. The rest of the drive will be dedicated to this.
+
+```
 n
 ... [press enter for default partition number]
 ... [press enter for default partition starting sector]
@@ -106,34 +134,68 @@ n
 t
 ... [press enter for default partition]
 42
+```
+
 After creating the needed partitions, then we can check our changes using the command below, which will show the created partitions.
+
+```
 p
 ...
+```
+
 Then, after confirming the correct partitions have been made, then we can write these changes to the disk and exit via this command below.
+
+```
 w
-Formatting the disk
+```
+
+# Formatting the disk
+
 Now that we have the disk partitioned, each partition can be referred to as a device.
-/dev/nvme0n1p1 : EFI system
-/dev/nvme0n1p2 : Linux swap
-/dev/nvme0n1p3 : Linux x86-64 root
-/dev/nvme0n1p4 : Linux home
-So, the next step is to format each partition with an appropriate file system. For the root and home partition, they are going to each use an Ext4 file system. This can be done as shown below.
+
+- /dev/nvme0n1p1 : _**EFI system**_
+- /dev/nvme0n1p2 : _**Linux swap**_
+- /dev/nvme0n1p3 : _**Linux x86-64 root**_
+- /dev/nvme0n1p4 : _**Linux home**_
+
+So, the next step is to format each partition with an appropriate file system. For the root and home partition, they are going to each use an _Ext4 file system_. This can be done as shown below.
+
+```
 # mkfs.ext4 /dev/nvme0n1p3
 # mkfs.ext4 /dev/nvme0n1p4
+```
+
 Next, you need to format the swap partition as well.
+
+```
 # mkswap /dev/nvme0n1p2
+```
+
 And then finally, the EFI system partition.
+
+```
 # mkfs.fat -F 32 /dev/nvme0n1p1
-Mounting the file systems
+```
+
+# Mounting the file systems
+
 The next step is to mount the file systems. This is an important step because it makes the data within these file systems accessible so that we can make changes to it. It’ll also get our swap and EFI partitions prepared as you’ll see soon.
 
 First, let’s mount the root, boot, and home volumes in that respective order.
+
+```
 # mount /dev/nvme0n1p3 /mnt
 # mount --mkdir /dev/nvme0n1p1 /mnt/boot
 # mount --mkdir /dev/nvme0n1p4 /mnt/home
+```
+
 Then, we’ll also enable the swap volume.
+
+```
 # swapon /dev/nvme0n1p2
-The reason why everything is currently mounted to ‘/mnt’ is because this is a temporary mount. Once we run ‘genfstab’ later and finish the Arch Linux installation, then these mounted file systems will be detected and will be transferred to the true root. Essentially, all things ‘/mnt’ will be shifted over to ‘/’.
+```
+
+The reason why everything is currently mounted to **‘/mnt’** is because this is a temporary mount. Once we run ‘genfstab’ later and finish the Arch Linux installation, then these mounted file systems will be detected and will be transferred to the true root. Essentially, all things ‘/mnt’ will be shifted over to ‘/’.
 Installing the essential packages
 Now that we have all our files systems properly mounted, we can begin installing the essential packages for Arch. However, before we do, it would be a wise idea to select the best mirrors to download from. A mirror is just another word for a place that you can download files from online. These will be defined on the file ‘/etc/pacman.d/mirrorlist’.
 
