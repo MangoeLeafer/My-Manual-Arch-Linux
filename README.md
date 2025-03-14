@@ -493,6 +493,15 @@ $ sudo systemctl start clamav-clamonacc.service
 
 First command enables the main ClamAV daemon, and the second one is for real-time on access protection. To check the logs for any scanned malware, run the command below (there should be nothing).
 
+If you ever want to check if a service is running, you can run this.
+
+```
+$ sudo systemctl status *service*
+...
+```
+
+Just replace the **'service'** with the service you're looking for and it'll tell you if it is active, inactive, or failed.
+
 ```
 $ tail /var/log/clamav/clamonacc.log
 ```
@@ -535,18 +544,94 @@ $ sudo rkhunter --update
 
 In summary, we've installed a basic anti-virus software alongside a rootkit protection software to protect our system to a pretty high standard. Adding an additional firewall to protect against network threats is also another security measure we can add, but we can do that later down the line in a more cleaner non-terminal fashion. Also, because I'm using a desktop that's connected to a WiFi router, the router itself already has a firewall to protect me, so there isn't a dire need for one, unlike if you're using a laptop that will connect to unsecure or public networks.
 
-## Additional packages and drivers
+## AUR and additional packages and drivers
 
+Now we can begin installing some additional packages and drivers. Please note that you are not only limited to these packages and those that we installed earlier. Arch Linux and Linux systems in general work off of the installation of packages, as the use of packages are essential to customizing one's Linux build to function the way they want it to.
 
+However, some of these packages we're going to be downloading are going to be located in something called the Arch User Repository (AUR). Up until now, we've been using **'pacman'** to download our packages. All the packages on there are supported by Arch Linux developers and trusted packagers. However, the AUR is different in that the packages there are user-made and community-maintained. To install packages from the AUR, we're going to install an AUR helper, **'yay'**.
 
-## Setting up desktop environment
+```
+$ sudo pacman -S yay
+```
 
-## Setting up window manager
+And to install an AUR package, we do this.
 
-## Login screen
+```
+$ yay -S *package-name*
+```
+
+And to update them, do this.
+
+```
+$ yay -Syu
+```
+
+This is set up similar to the default **'pacman'** package manager, so most of the commands that you would normally run on that should map just fine with **'yay'**.
+
+Since I want to run my system through a graphical environment, we need to install video drivers. Because I'm using an AMD GPU, I'm going to install the open source AMD driver, **'xf86-video-amdgpu'**, 3D support, **'mesa'**, and Vulkan support, **'vulkan-radeon'**.
+
+```
+$ sudo pacman -S xf86-video-amdgpu mesa vulkan-radeon
+```
+
+We don't need to download any sound drivers because the Linux kernel already has one built into it, ALSA. We installed PipeWire earlier when installing the OS, which works on top of this.
+
+And for fun, we'll also install **'neofetch'** to display system information in a console.
+
+```
+$ sudo pacman -S neofetch
+```
+
+## Desktop environment
+
+I'm going to be constructing my own desktop environment, with at least these features first.
+
+- Window manager
+- Status bar
+- Application launcher
+- Lockscreen
+- Logout/shutdown menu
+
+For my window manager, I'm going to be using Hyprland so we can simply install it using the command below.
+
+```
+$ sudo pacman -S hyprland
+```
+
+We're also going to go ahead and install a terminal emulator, **'kitty'**.
+
+```
+$ sudo pacman -S kitty
+```
+
+Then to install the application launcher, lockscreen, and status bar we'll run this.
+
+```
+$ sudo pacman -S wofi waybar swaylock
+```
+
+After, we can install the logout/shutdown menu.
+
+```
+$ yay -S wlogout
+```
+
+## Display manager
+
+A display manager is essentially a login screen that appears at boot. The one we're going to be using is SDDM, which works flawlessly with Hyprland. To install it we can run this.
+
+```
+$ sudo pacman -S sddm
+```
+
+And to enable it so that it can start on boot, we'll do this.
+
+```
+$ sudo systemctl enable sddm
+```
+
+Finally, we can reboot our system and see if it works. You should be greeted with the SDDM login screen, and once you login you should see your desktop environment. If you do, congratulations! You have just set up your basic graphical environment!
 
 # Finishing touches
-
-## Arch user repository
 
 ## System maintenance
