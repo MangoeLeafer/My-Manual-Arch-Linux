@@ -395,9 +395,149 @@ $ nmcli device
 
 Now you should be able to update all your packages just fine! Also, because earlier we enabled the network manager service, the system should reconnect to the internet even after reboot.
 
+## Adding users
+
+The next we should do is to add a user, or users. With the new installation we just made, the only account you can access is the root one, otherwise known as the _**superuser**_. However, logging in as root for long periods of time is insecure. The reason being, you essentially expose all of your storage to anybody who has access to your computer. Any extraneous access to this superuser means total compromise of your system.
+
+To add a basic user, we can run this command below.
+
+```
+# useradd -m jackie
+```
+
+The **'-m'** in the command tells our system to create a home directory for our user. This would look something like, **'/home/jackie'**. And to add a password for our user, we can run this below.
+
+```
+# passwd jackie
+...
+```
+
+This will then prompt you to make a password for the user. Also note that the **'useradd'** command will automatically create a user group with the same name as the user. However, since I am not using this computer as part of a multi-user system, I won't be getting into user groups. For that, you can search that up on the Arch Linux Wiki.
+
+Now, you can reboot and sign into the user account you just made. Once you have done that, we can move onto securing our system.
+
+## Security
+
+Securing the Linux system is important. Many people argue that because Linux isn't as widely used as other operating systems like Windows, that it doesn't need to be secured. HOWEVER, there does exist Linux malware and security concerns that I would personally deem important to counter.
+
+The first thing we're going to do is to install an anti-virus and configure it. The most common one that's used is ClamAV. To install it, we'll use **pacman** to install the package.
+
+```
+$ sudo pacman -S clamav
+...
+```
+
+You also might notice that we're using **'sudo'** as part of our commands now, and that is because of permission levels. Because we're not a superuser anymore, we need to request permission (act as a root user) before installing packages or data into the root directory. This will prompt you to enter the *USER*, not root, password in order to run the command.
+
+Now let's go ahead and configure ClamAV. First, check that the clamconf configuration files have been made.
+
+```
+$ clamconf
+```
+
+If not, then go ahead and create them.
+
+```
+$ clamconf -g freshclam.conf > freshclam.conf
+$ clamconf -g clamd.conf > clamd.conf
+$ clamconf -g clamav-milter.conf > clamav-milter.conf
+```
+
+After that, we're going to go ahead and set up real-time protection. This is going to use on-access scanning. Any files being read, written to, or executed will be scanned prior, and then this can be configured to either notify on detection or just prevent/block. We are going to use prevention. This scanning requires the kernel to be compiled with the **fanotify** module, which our kernel already has.
+
+To configure on-access scanning, we're going to do this by editing the **'/etc/clamav/clamd.conf'** file.
+
+```
+# Exclude the UID of the scanner itself from checking, to prevent loops
+OnAccessExcludeUname clamav
+
+# WARNING: for security reasons, clamd should NEVER run as root.
+# Previous instructions in this wiki included this line, remove it:
+# User root    # REMOVE THIS
+# Add this instead:
+User clamav
+```
+
+We will also go ahead and set this on-access scanner into prevention mode (still editing the same file).
+
+```
+# Add some directories to scan and not to scan.
+OnAccessIncludePath /home
+OnAccessIncludePath /tmp
+OnAccessIncludePath /var/tmp
+OnAccessIncludePath /mnt
+OnAccessIncludePath /media
+
+# Prevention doesn't work with OnAccessMountPath.
+# It works with OnAccessIncludePath, as long as /usr and /etc are not included.
+# Including /var while activating prevention is also not recommended, because
+# this would slow down package installation by a factor of 1000.
+# However, since we don't have any of those, we should be fine.
+OnAccessPrevention yes
+
+# Perform scans on newly created, moved, or renamed files
+OnAccessExtraScanning yes
+
+# Exclude root-owned processes
+OnAccessExcludeRootUID true
+```
+
+We're not going to create any notification popups yet as that can be configured in the future. Instead, we're just going to go ahead and enable the needed ClamAV services.
+
+```
+$ sudo systemctl enable clamav-daemon.service
+$ sudo systemctl enable clamav-clamonacc.service
+$ sudo systemctl start clamav-daemon.service
+$ sudo systemctl start clamav-clamonacc.service
+```
+
+First command runs the main ClamAV daemon, and the second one is for real-time on access protection. To check the logs for any scanned malware, run the command below (there should be nothing).
+
+```
+$ tail /var/log/clamav/clamonacc.log
+```
+
+Additionally, reading the **'/etc/clamav/clamd.conf'** file can let you see the other log files that are being written to, which you can read the logs for with the same command above, just with a different directory.
+
+The next thing we will do is install rootkit protection. Rootkits are one of the most dangerous malwares that GNU/Linux users could encounter because it can enable an unauthorized user to gain control of a computer system without being detected. So for us, we're going to be downloading **'rkhunter'**.
+
+```
+$ sudo pacman -S rkhunter
+...
+```
+
+Then to setup, we do this.
+
+```
+$ sudo rkhunter --propupd
+```
+
+Then, we're going to edit the configuration file to white-list some files to prevent false positives due to core utilities that have been replaced by scripts. Using **'nano'**, edit **'/etc/rkhunter.conf'**.
+
+```
+SCRIPTWHITELIST=/usr/bin/egrep
+SCRIPTWHITELIST=/usr/bin/fgrep
+SCRIPTWHITELIST=/usr/bin/ldd
+SCRIPTWHITELIST=/usr/bin/vendor_perl/GET
+```
+
+Now, whenever you need to run a check, do this.
+
+```
+$ sudo rkhunter --check
+```
+
+And to update the data files to keep up-to-date (which you should do regularly, but can automate), run this.
+
+```
+$ sudo rkhunter --update
+```
+
+In summary, we've installed a basic anti-virus software alongside a rootkit protection software to protect our system to a pretty high standard. Adding an additional firewall to protect against network threats is also another security measure we can add, but we can do that later down the line in a more cleaner non-terminal fashion. Also, because I'm using a desktop that's connected to a WiFi router, the router itself already has a firewall to protect me, so there isn't a dire need for one, unlike if you're using a laptop that will connect to unsecure or public networks.
+
 ## Additional packages and drivers
 
-## Adding users
+
 
 ## Setting up desktop environment
 
@@ -405,4 +545,8 @@ Now you should be able to update all your packages just fine! Also, because earl
 
 ## Login screen
 
-## Finishing touches
+# Finishing touches
+
+## Arch user repository
+
+## System maintenance
