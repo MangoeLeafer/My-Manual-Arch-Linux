@@ -491,7 +491,7 @@ $ sudo systemctl start clamav-daemon.service
 $ sudo systemctl start clamav-clamonacc.service
 ```
 
-First command runs the main ClamAV daemon, and the second one is for real-time on access protection. To check the logs for any scanned malware, run the command below (there should be nothing).
+First command enables the main ClamAV daemon, and the second one is for real-time on access protection. To check the logs for any scanned malware, run the command below (there should be nothing).
 
 ```
 $ tail /var/log/clamav/clamonacc.log
@@ -499,7 +499,7 @@ $ tail /var/log/clamav/clamonacc.log
 
 Additionally, reading the **'/etc/clamav/clamd.conf'** file can let you see the other log files that are being written to, which you can read the logs for with the same command above, just with a different directory.
 
-The next thing we will do is install rootkit protection. Rootkits are one of the most dangerous malwares that GNU/Linux users could encounter because it can enable an unauthorized user to gain control of a computer system without being detected. So for us, we're going to be downloading **'rkhunter'**.
+The next thing we will do is install rootkit protection. Rootkits are one of the most dangerous malwares that GNU/Linux users could encounter because it can enable an unauthorized user to gain control of a computer system without being detected. So for us, we're going to be installing **'rkhunter'**.
 
 ```
 $ sudo pacman -S rkhunter
