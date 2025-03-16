@@ -528,6 +528,7 @@ Then, we're going to edit the configuration file to white-list some files to pre
 SCRIPTWHITELIST=/usr/bin/egrep
 SCRIPTWHITELIST=/usr/bin/fgrep
 SCRIPTWHITELIST=/usr/bin/ldd
+SCRIPTWHITELIST=/usr/bin/vendor_perl
 ```
 
 Now, whenever you need to run a check, do this.
