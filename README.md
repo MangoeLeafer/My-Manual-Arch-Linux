@@ -487,11 +487,16 @@ We're not going to create any notification popups yet as that can be configured 
 ```
 $ sudo systemctl enable clamav-daemon.service
 $ sudo systemctl enable clamav-clamonacc.service
+$ sudo freshclam
 $ sudo systemctl start clamav-daemon.service
 $ sudo systemctl start clamav-clamonacc.service
 ```
 
-First command enables the main ClamAV daemon, and the second one is for real-time on access protection. To check the logs for any scanned malware, run the command below (there should be nothing).
+First command enables the main ClamAV daemon, and the second one is for real-time on access protection. To check the logs for any scanned malware, run the command below (there should be nothing). The freshclam command is needed in order for on-access scanning to start.
+
+```
+$ tail /var/log/clamav/clamonacc.log
+```
 
 If you ever want to check if a service is running, you can run this.
 
@@ -501,10 +506,6 @@ $ sudo systemctl status *service*
 ```
 
 Just replace the **'service'** with the service you're looking for and it'll tell you if it is active, inactive, or failed.
-
-```
-$ tail /var/log/clamav/clamonacc.log
-```
 
 Additionally, reading the **'/etc/clamav/clamd.conf'** file can let you see the other log files that are being written to, which you can read the logs for with the same command above, just with a different directory.
 
@@ -527,7 +528,6 @@ Then, we're going to edit the configuration file to white-list some files to pre
 SCRIPTWHITELIST=/usr/bin/egrep
 SCRIPTWHITELIST=/usr/bin/fgrep
 SCRIPTWHITELIST=/usr/bin/ldd
-SCRIPTWHITELIST=/usr/bin/vendor_perl/GET
 ```
 
 Now, whenever you need to run a check, do this.
